@@ -13,7 +13,7 @@ class BucketUT(unittest.TestCase):
     '''
     def test_basic_bucket(self):
         print "Test basic bucket"
-        bkts = buckets.Buckets()
+        bkts = buckets.Buckets(2, [5, 4])
         self.failUnless(bkts is not None)
 
         pp = pprint.PrettyPrinter(indent=1)
