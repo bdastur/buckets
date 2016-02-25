@@ -34,7 +34,6 @@ class Buckets(object):
         for idx in range(0, bucketlist_count):
             bucketsobject = {}
             bucketsobject['current_idx'] = 0
-            bucketsobject['cumulative_count'] = 0
             bucketsobject['size'] = bucketlist_size[idx]
             bucketsobject['list'] = self.__initialize_buckets(
                 bucketsobject['size'])
@@ -55,9 +54,32 @@ class Buckets(object):
 
         return bucket_list
 
+    def __bucket_create_internal(self,
+                                 data,
+                                 bucket_id,
+                                 keep=False,
+                                 oldbucket=None):
+        '''
+        Create a new bucket or createa copy
+        '''
+        bucket = {}
+        if oldbucket is None:
+            bucket['data'] = data
+            bucket['id'] = bucket_id
+            bucket['last_updated_ts'] = datetime.datetime.now()
+            bucket['keep'] = keep
+        else:
+            bucket['data'] = oldbucket['data']
+            bucket['id'] = oldbucket['id']
+            bucket['last_updated_ts'] = oldbucket['last_updated_ts']
+            bucket['keep'] = oldbucket['keep']
+
+        return bucket
+
     def __buckets_add_element_internal(self,
                                        data,
                                        level,
+                                       keep=False,
                                        oldbucket=None):
         '''
         Internal function to add element to the buckets
@@ -65,63 +87,41 @@ class Buckets(object):
         #for idx in range(level, self.buckets_count):
         self.cumulative_count += 1
         idx = level
-        if idx not in range(level, self.buckets_count):
-            # If we are on the last bucket list, chunk this data
-            if oldbucket is not None:
-                print "[id: %d ] Chunking: %s " % (idx, oldbucket)
 
         if idx in range(level, self.buckets_count):
             bucketsobject = self.buckets[idx]
             curr_idx = bucketsobject['current_idx']
             curr_idx = curr_idx % bucketsobject['size']
             if bucketsobject['list'][curr_idx]['data'] is None:
-                print "ADD: %d to [%d: %d]" % \
-                    (data, level, curr_idx)
-                bucketsobject['list'][curr_idx]['data'] = data
-                if oldbucket is None:
-                    bucketsobject['list'][curr_idx]['id'] = \
-                        self.cumulative_count
-                    bucketsobject['list'][curr_idx]['last_updated_ts'] = \
-                        datetime.datetime.now()
-                else:
-                    bucketsobject['list'][curr_idx]['id'] = \
-                        oldbucket['id']
-                    bucketsobject['list'][curr_idx]['last_updated_ts'] = \
-                        oldbucket['last_updated_ts']
+                bucketsobject['list'][curr_idx] = \
+                    self.__bucket_create_internal(data,
+                                                  self.cumulative_count,
+                                                  keep=keep,
+                                                  oldbucket=oldbucket)
 
                 bucketsobject['current_idx'] += 1
             else:
-                print "ADD: %d to [%d: %d]" % \
-                    (data, level, curr_idx)
                 olddata = bucketsobject['list'][curr_idx]['data']
                 currbucket = bucketsobject['list'][curr_idx]
 
-                bucketsobject['list'][curr_idx]['data'] = data
-                if oldbucket is None:
-                    bucketsobject['list'][curr_idx]['id'] = \
-                        self.cumulative_count
-                    bucketsobject['list'][curr_idx]['last_updated_ts'] = \
-                        datetime.datetime.now()
-                else:
-                    print "Oldbucket is not none, set id", \
-                        oldbucket['id'], "  ", self.cumulative_count
-                    bucketsobject['list'][curr_idx]['id'] = \
-                        oldbucket['id']
-                    bucketsobject['list'][curr_idx]['last_updated_ts'] = \
-                        oldbucket['last_updated_ts']
+                bucketsobject['list'][curr_idx] = \
+                    self.__bucket_create_internal(data,
+                                                  self.cumulative_count,
+                                                  keep=keep,
+                                                  oldbucket=oldbucket)
 
                 bucketsobject['current_idx'] += 1
                 self.__buckets_add_element_internal(olddata,
                                                     idx+1,
                                                     oldbucket=currbucket)
 
-    def buckets_add_element(self, data):
+    def buckets_add_element(self, data, keep=False):
         '''
         Main API to add a new element to the buckets.
         Adding a new element to the buckets always happens at the
         topmost bucket list. Old values get pushed to lower bucket lists.
         '''
-        self.__buckets_add_element_internal(data, 0)
+        self.__buckets_add_element_internal(data, 0, keep=keep)
 
 
 
