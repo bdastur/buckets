@@ -11,6 +11,7 @@ exists, else it gets chunked.
 
 '''
 
+import datetime
 
 class Buckets(object):
     '''
@@ -25,8 +26,6 @@ class Buckets(object):
             - bucket-count: Number of bucket lists to manage.
             - bucketlist_size - Size of each bucket list.
         '''
-        print "Initialize buckets"
-        print type(bucketlist_size)
 
         self.buckets = []
         self.buckets_count = bucketlist_count
@@ -39,10 +38,7 @@ class Buckets(object):
             bucketsobject['size'] = bucketlist_size[idx]
             bucketsobject['list'] = self.__initialize_buckets(
                 bucketsobject['size'])
-            print "bucket: ", bucketsobject
             self.buckets.append(bucketsobject)
-
-        print self.buckets
 
     def __initialize_buckets(self, size):
         '''
@@ -51,35 +47,73 @@ class Buckets(object):
         bucket_list = []
         for _ in range(0, size):
             bucket = {}
-            bucket['last_update_ts'] = 0
             bucket['data'] = None
+            bucket['id'] = 0
+            bucket['keep'] = False
+            bucket['last_updated_ts'] = None
             bucket_list.append(bucket)
 
         return bucket_list
 
-    def __buckets_add_element_internal(self, data, level):
+    def __buckets_add_element_internal(self,
+                                       data,
+                                       level,
+                                       oldbucket=None):
         '''
         Internal function to add element to the buckets
         '''
         #for idx in range(level, self.buckets_count):
+        self.cumulative_count += 1
         idx = level
+        if idx not in range(level, self.buckets_count):
+            # If we are on the last bucket list, chunk this data
+            if oldbucket is not None:
+                print "[id: %d ] Chunking: %s " % (idx, oldbucket)
+
         if idx in range(level, self.buckets_count):
             bucketsobject = self.buckets[idx]
             curr_idx = bucketsobject['current_idx']
             curr_idx = curr_idx % bucketsobject['size']
-            print "curr_idx: ", curr_idx
             if bucketsobject['list'][curr_idx]['data'] is None:
-                print "Bucket object is none"
-                print "ADD: %d to [%d: %d]"
+                print "ADD: %d to [%d: %d]" % \
+                    (data, level, curr_idx)
                 bucketsobject['list'][curr_idx]['data'] = data
+                if oldbucket is None:
+                    bucketsobject['list'][curr_idx]['id'] = \
+                        self.cumulative_count
+                    bucketsobject['list'][curr_idx]['last_updated_ts'] = \
+                        datetime.datetime.now()
+                else:
+                    bucketsobject['list'][curr_idx]['id'] = \
+                        oldbucket['id']
+                    bucketsobject['list'][curr_idx]['last_updated_ts'] = \
+                        oldbucket['last_updated_ts']
+
                 bucketsobject['current_idx'] += 1
             else:
-                print "Bucket object is not None: idx", idx
+                print "ADD: %d to [%d: %d]" % \
+                    (data, level, curr_idx)
                 olddata = bucketsobject['list'][curr_idx]['data']
+                currbucket = bucketsobject['list'][curr_idx]
+
                 bucketsobject['list'][curr_idx]['data'] = data
+                if oldbucket is None:
+                    bucketsobject['list'][curr_idx]['id'] = \
+                        self.cumulative_count
+                    bucketsobject['list'][curr_idx]['last_updated_ts'] = \
+                        datetime.datetime.now()
+                else:
+                    print "Oldbucket is not none, set id", \
+                        oldbucket['id'], "  ", self.cumulative_count
+                    bucketsobject['list'][curr_idx]['id'] = \
+                        oldbucket['id']
+                    bucketsobject['list'][curr_idx]['last_updated_ts'] = \
+                        oldbucket['last_updated_ts']
+
                 bucketsobject['current_idx'] += 1
                 self.__buckets_add_element_internal(olddata,
-                                                    idx+1)
+                                                    idx+1,
+                                                    oldbucket=currbucket)
 
     def buckets_add_element(self, data):
         '''
