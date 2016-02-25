@@ -19,6 +19,9 @@ class BucketUT(unittest.TestCase):
         pp = pprint.PrettyPrinter(indent=1)
         pp.pprint(bkts.buckets)
 
+    def test_buckets_add(self):
+        bkts = buckets.Buckets(2, [5, 4])
+
         bkts.buckets_add_element(10)
         bkts.buckets_add_element(20)
         bkts.buckets_add_element(30)
@@ -37,10 +40,32 @@ class BucketUT(unittest.TestCase):
         bkts.buckets_add_element(160)
         bkts.buckets_add_element(170)
 
-
-
         pp = pprint.PrettyPrinter(indent=1)
         pp.pprint(bkts.buckets)
+
+    def test_buckets_get_element(self):
+        bkts = buckets.Buckets(2, [5, 4])
+
+        bkts.buckets_add_element(10)
+        bkts.buckets_add_element(20)
+
+        elem = bkts.buckets_get_element()
+        self.failUnless(elem == 20)
+
+        bkts.buckets_add_element(30)
+        bkts.buckets_add_element(40)
+        bkts.buckets_add_element(50)
+
+        elem = bkts.buckets_get_element()
+        print "Elem: ", elem
+
+        bkts.buckets_add_element(60)
+        bkts.buckets_add_element(70)
+        bkts.buckets_add_element(80)
+
+        elem = bkts.buckets_get_element()
+        print "Elem: ", elem
+
 
 
 

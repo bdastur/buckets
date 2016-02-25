@@ -155,6 +155,39 @@ class Buckets(object):
         '''
         self.__buckets_add_element_internal(data, 0, keep=keep)
 
+    def buckets_get_element(self, relevance=0):
+        '''
+        The API to return an element from the buckets. The default
+        behavior is to return the latest or the most relevant
+        element, but invoking it with a relevance count will return
+        the nth element from the latest.
+
+        Args:
+            relevance (optional): Return n'th element from the
+                                  current.
+        '''
+
+        if relevance == 0:
+            bucketsobject = self.buckets[0]
+            # The current_idx points to the current bucket to
+            # add element to. So the last/most relevant element
+            # will be the one before.
+            curr_idx = bucketsobject['current_idx'] - 1
+            curr_idx = curr_idx % bucketsobject['size']
+            bucket = bucketsobject['list'][curr_idx]
+
+            return bucket['data']
+        else:
+            # Same <TODO: Fix>.
+            bucketsobject = self.buckets[0]
+            curr_idx = bucketsobject['current_idx'] - 1
+            curr_idx = curr_idx % bucketsobject['size']
+
+            bucket = bucketsobject['list'][curr_idx]
+
+            return bucket['data']
+
+
 
 
 
