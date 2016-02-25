@@ -2,16 +2,29 @@
 # -*- coding: utf-8 -*-
 
 '''
-Buckets: A python module to manage data. A bucket is a place holder
+#Buckets:
+A python module to manage data. A bucket is a place holder
 for data. And with Buckets you can manage multiple bucket lists.
 
 A bucket list is a fixed size list of buckets. When data exceeds the bucket
 list, the oldest data gets moved to a lower priority bucket list if there
 exists, else it gets chunked.
 
+Example:
+    A simple example of using buckets.
+
+    import buckets
+
+    # This initializes the Buckets class with 2 bucket lists of size 5 and 4.
+    bkts = buckets.Buckets(2, [5,4])
+
+    # To add to the buckets simply call
+    bkts.buckets_add_element(<data>)
+
 '''
 
 import datetime
+
 
 class Buckets(object):
     '''
@@ -22,9 +35,14 @@ class Buckets(object):
                  bucketlist_size):
         '''
         Initialize Buckets.
-        @args:
-            - bucket-count: Number of bucket lists to manage.
-            - bucketlist_size - Size of each bucket list.
+        To Initialize Buckets, pass the number of bucket-lists
+        and size of each bucket-list
+        Args:
+            bucketlist_count: Number of bucket lists to manage.
+            bucketlist_size - Size of each bucket list.
+
+        Returns:
+            Does not return anything.
         '''
 
         self.buckets = []
@@ -118,12 +136,24 @@ class Buckets(object):
     def buckets_add_element(self, data, keep=False):
         '''
         Main API to add a new element to the buckets.
+
         Adding a new element to the buckets always happens at the
-        topmost bucket list. Old values get pushed to lower bucket lists.
+        topmost bucket list, at the current pointer to the bucket.
+
+        If the bucket has some data already, it will be moved over
+        to a bucket in the bucket-list of a lower priority, in which case
+        the data in that lower priority bucket will be moved further down
+        the list if there exists, else the lowest priority data will be
+        chunked/deleted.
+
+        Args:
+            data: User data to save in the bucket. (can be anything)
+            keep: [Currently not supported] A flag to indicate not to
+                  delete the data, but keep it in lowest priority
+                  bucket-list, till changed.
+
         '''
         self.__buckets_add_element_internal(data, 0, keep=keep)
-
-
 
 
 
