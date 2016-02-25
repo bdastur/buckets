@@ -1,21 +1,38 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''
+Buckets: A python module to manage data. A bucket is a place holder
+for data. And with Buckets you can manage multiple bucket lists.
+
+A bucket list is a fixed size list of buckets. When data exceeds the bucket
+list, the oldest data gets moved to a lower priority bucket list if there
+exists, else it gets chunked.
+
+'''
+
 
 class Buckets(object):
     '''
     Buckets class
     '''
-    def __init__(self, bucket_count=2,
-                 bucketlist_size=[5, 4]):
+    def __init__(self,
+                 bucketlist_count,
+                 bucketlist_size):
+        '''
+        Initialize Buckets.
+        @args:
+            - bucket-count: Number of bucket lists to manage.
+            - bucketlist_size - Size of each bucket list.
+        '''
         print "Initialize buckets"
         print type(bucketlist_size)
 
         self.buckets = []
-        self.buckets_count = bucket_count
+        self.buckets_count = bucketlist_count
         self.cumulative_count = 0
 
-        for idx in range(0, bucket_count):
+        for idx in range(0, bucketlist_count):
             bucketsobject = {}
             bucketsobject['current_idx'] = 0
             bucketsobject['cumulative_count'] = 0
@@ -28,8 +45,11 @@ class Buckets(object):
         print self.buckets
 
     def __initialize_buckets(self, size):
+        '''
+        Internal API: Initalize buckets to None
+        '''
         bucket_list = []
-        for idx in range(0, size):
+        for _ in range(0, size):
             bucket = {}
             bucket['last_update_ts'] = 0
             bucket['data'] = None
@@ -41,7 +61,6 @@ class Buckets(object):
         '''
         Internal function to add element to the buckets
         '''
-        print "LEVEL: ", level
         #for idx in range(level, self.buckets_count):
         idx = level
         if idx in range(level, self.buckets_count):
@@ -51,6 +70,7 @@ class Buckets(object):
             print "curr_idx: ", curr_idx
             if bucketsobject['list'][curr_idx]['data'] is None:
                 print "Bucket object is none"
+                print "ADD: %d to [%d: %d]"
                 bucketsobject['list'][curr_idx]['data'] = data
                 bucketsobject['current_idx'] += 1
             else:
