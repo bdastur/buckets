@@ -106,8 +106,7 @@ class Buckets(object):
         '''
         self.cumulative_count += 1
         idx = level
-
-        if idx in range(level, self.buckets_count):
+        if level < self.buckets_count:
             bucketsobject = self.buckets[idx]
             curr_idx = bucketsobject['current_idx']
             curr_idx = curr_idx % bucketsobject['size']
@@ -194,9 +193,6 @@ class Buckets(object):
             bucket = bucketsobject['list'][curr_idx]
 
             return bucket['data']
-
-
-
 
 
 
