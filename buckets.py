@@ -96,18 +96,9 @@ class Buckets(object):
         '''
         bucket = {}
         bucketsobject['count'] += 1
-        #print "bucket id: %d, level: %d, freq: %d " % \
-        #    (bucket_id, bucketsobject['id'], bucketsobject['storefreq'])
         modval = bucketsobject['count'] % bucketsobject['storefreq']
         if modval != 0:
-            print "Skip adding %d to %d: %d (%d mod %d %d)" % \
-                (data, bucketsobject['id'], bucket_id,
-                 bucketsobject['count'],
-                 bucketsobject['storefreq'], modval)
             return None
-
-        print "data: %d to be added to %d: %d " % \
-            (data, bucketsobject['id'], bucket_id)
 
         if oldbucket is None:
             bucket['data'] = data
@@ -170,8 +161,6 @@ class Buckets(object):
         else:
             # We have gone through all the bucketlists. Now is the
             # time to cleanup the least relevant bucket.
-            print "data: %s, level: %s, oldbucket: %s " % \
-                (data, level, oldbucket)
             if self.bucket_destructor is not None:
                 self.bucket_destructor(data=data)
 
