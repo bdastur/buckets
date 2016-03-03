@@ -39,9 +39,17 @@ class Buckets(object):
         To Initialize Buckets, pass the number of bucket-lists
         and size of each bucket-list
         Args:
-            bucketlist_count: Number of bucket lists to manage.
-            bucketlist_size - Size of each bucket list.
-
+            bucketlist_count: (integer)  Number of bucket lists to manage.
+            bucketlist_size - (list of tuples)
+                              A tuple of size and store-freq for each bucket
+                              list.
+                              size - (integer) size of buckets in this list
+                              store-freq - Iteration freq to store data in the
+                              bucket.
+                              Eg: If the store-feq of 2nd bucket list was 5,
+                              then when bucket overflows from first bucket list,
+                              only every 5th overflow will be provided a bucket
+                              in the 2nd bucket list.
         Returns:
             Does not return anything.
         '''
@@ -53,8 +61,11 @@ class Buckets(object):
 
         for idx in range(0, bucketlist_count):
             bucketsobject = {}
+            bucketsobject['id'] = idx
             bucketsobject['current_idx'] = 0
-            bucketsobject['size'] = bucketlist_size[idx]
+            bucketsobject['size'] = bucketlist_size[idx][0]
+            bucketsobject['count'] = 0
+            bucketsobject['storefreq'] = bucketlist_size[idx][1]
             bucketsobject['list'] = self.__initialize_buckets(
                 bucketsobject['size'])
             self.buckets.append(bucketsobject)
@@ -77,12 +88,27 @@ class Buckets(object):
     def __bucket_create_internal(self,
                                  data,
                                  bucket_id,
+                                 bucketsobject,
                                  keep=False,
                                  oldbucket=None):
         '''
         Create a new bucket or createa copy
         '''
         bucket = {}
+        bucketsobject['count'] += 1
+        #print "bucket id: %d, level: %d, freq: %d " % \
+        #    (bucket_id, bucketsobject['id'], bucketsobject['storefreq'])
+        modval = bucketsobject['count'] % bucketsobject['storefreq']
+        if modval != 0:
+            print "Skip adding %d to %d: %d (%d mod %d %d)" % \
+                (data, bucketsobject['id'], bucket_id,
+                 bucketsobject['count'],
+                 bucketsobject['storefreq'], modval)
+            return None
+
+        print "data: %d to be added to %d: %d " % \
+            (data, bucketsobject['id'], bucket_id)
+
         if oldbucket is None:
             bucket['data'] = data
             bucket['id'] = bucket_id
@@ -114,10 +140,14 @@ class Buckets(object):
                 bucketsobject['list'][curr_idx] = \
                     self.__bucket_create_internal(data,
                                                   self.cumulative_count,
+                                                  bucketsobject,
                                                   keep=keep,
                                                   oldbucket=oldbucket)
-
-                bucketsobject['current_idx'] += 1
+                if bucketsobject['list'][curr_idx] is None:
+                    bucketsobject['list'][curr_idx] = {}
+                    bucketsobject['list'][curr_idx]['data'] = None
+                else:
+                    bucketsobject['current_idx'] += 1
             else:
                 olddata = bucketsobject['list'][curr_idx]['data']
                 currbucket = bucketsobject['list'][curr_idx]
@@ -125,10 +155,15 @@ class Buckets(object):
                 bucketsobject['list'][curr_idx] = \
                     self.__bucket_create_internal(data,
                                                   self.cumulative_count,
+                                                  bucketsobject,
                                                   keep=keep,
                                                   oldbucket=oldbucket)
+                if bucketsobject['list'][curr_idx] is None:
+                    bucketsobject['list'][curr_idx] = {}
+                    bucketsobject['list'][curr_idx]['data'] = None
+                else:
+                    bucketsobject['current_idx'] += 1
 
-                bucketsobject['current_idx'] += 1
                 self.__buckets_add_element_internal(olddata,
                                                     idx+1,
                                                     oldbucket=currbucket)
