@@ -32,7 +32,8 @@ class Buckets(object):
     '''
     def __init__(self,
                  bucketlist_count,
-                 bucketlist_size):
+                 bucketlist_size,
+                 bucket_distructor=None):
         '''
         Initialize Buckets.
         To Initialize Buckets, pass the number of bucket-lists
@@ -48,6 +49,7 @@ class Buckets(object):
         self.buckets = []
         self.buckets_count = bucketlist_count
         self.cumulative_count = 0
+        self.bucket_distructor = bucket_distructor
 
         for idx in range(0, bucketlist_count):
             bucketsobject = {}
@@ -102,7 +104,6 @@ class Buckets(object):
         '''
         Internal function to add element to the buckets
         '''
-        #for idx in range(level, self.buckets_count):
         self.cumulative_count += 1
         idx = level
 
@@ -132,6 +133,13 @@ class Buckets(object):
                 self.__buckets_add_element_internal(olddata,
                                                     idx+1,
                                                     oldbucket=currbucket)
+        else:
+            # We have gone through all the bucketlists. Now is the
+            # time to cleanup the least relevant bucket.
+            print "data: %s, level: %s, oldbucket: %s " % \
+                (data, level, oldbucket)
+            if self.bucket_distructor is not None:
+                self.bucket_distructor(data=data)
 
     def buckets_add_element(self, data, keep=False):
         '''
