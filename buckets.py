@@ -128,31 +128,26 @@ class Buckets(object):
             curr_idx = bucketsobject['current_idx']
             curr_idx = curr_idx % bucketsobject['size']
             if bucketsobject['list'][curr_idx]['data'] is None:
-                bucketsobject['list'][curr_idx] = \
+                new_bucket = \
                     self.__bucket_create_internal(data,
                                                   self.cumulative_count,
                                                   bucketsobject,
                                                   keep=keep,
                                                   oldbucket=oldbucket)
-                if bucketsobject['list'][curr_idx] is None:
-                    bucketsobject['list'][curr_idx] = {}
-                    bucketsobject['list'][curr_idx]['data'] = None
-                else:
+                if new_bucket is not None:
+                    bucketsobject['list'][curr_idx] = new_bucket
                     bucketsobject['current_idx'] += 1
             else:
                 olddata = bucketsobject['list'][curr_idx]['data']
                 currbucket = bucketsobject['list'][curr_idx]
-
-                bucketsobject['list'][curr_idx] = \
+                new_bucket = \
                     self.__bucket_create_internal(data,
                                                   self.cumulative_count,
                                                   bucketsobject,
                                                   keep=keep,
                                                   oldbucket=oldbucket)
-                if bucketsobject['list'][curr_idx] is None:
-                    bucketsobject['list'][curr_idx] = {}
-                    bucketsobject['list'][curr_idx]['data'] = None
-                else:
+                if new_bucket is not None:
+                    bucketsobject['list'][curr_idx] = new_bucket
                     bucketsobject['current_idx'] += 1
 
                 self.__buckets_add_element_internal(olddata,
