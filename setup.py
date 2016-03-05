@@ -6,7 +6,7 @@ with open('README.md') as fhandle:
 
 setup(
     name='buckets',
-    version='1.0.1',
+    version='1.0.2',
     description='managing data by relevancy.',
     long_description=long_description,
     url="https://github.com/bdastur/spam",
