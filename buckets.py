@@ -98,6 +98,8 @@ class Buckets(object):
         bucketsobject['count'] += 1
         modval = bucketsobject['count'] % bucketsobject['storefreq']
         if modval != 0:
+            if self.bucket_destructor is not None:
+                self.bucket_destructor(data=data)
             return None
 
         if oldbucket is None:
