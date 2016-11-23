@@ -9,7 +9,7 @@ setup(
     version='1.0.2',
     description='managing data by relevancy.',
     long_description=long_description,
-    url="https://github.com/bdastur/spam",
+    url="https://github.com/bdastur/buckets",
     author="Behzad Dastur",
     author_email="bdastur@gmail.com",
     license='Apache Software License',
